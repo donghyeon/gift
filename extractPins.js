@@ -16,13 +16,13 @@ function numUnregisteredPins() {
 
 function extractPinsWithCode(raw) {
     let pinWithCodeRe = /\d{4}-\d{4}-\d{4}-\d{4}_\d+|\d{16}_\d+/g;
-    let pinWithCodeMatches = raw.match(pinWithCodeRe);
+    let pinWithCodeMatches = raw.match(pinWithCodeRe).map((match) => match.replaceAll('-', ''));
     return pinWithCodeMatches;
 }
 
 function extractPinsOnly(raw) {
     let pinOnlyRe = /\d{4}-\d{4}-\d{4}-\d{4}|\d{16}/g;
-    let pinOnlyMatches = raw.match(pinOnlyRe);
+    let pinOnlyMatches = raw.match(pinOnlyRe).map((match) => match.replaceAll('-', ''));
     return pinOnlyMatches;
 }
 
