@@ -51,11 +51,13 @@ function checkUnregisteredPins() {
 
 if (checkUnregisteredPins()) {
     let raw = prompt('데이터를 입력하세요.');
-    let pins = extractGiftPins(raw);
-    if (pins != null) {
-        savePins(pins);
-        alert(`핀번호 ${pins.length}개를 저장하였습니다.`);
-    } else {
-        alert(`핀을 찾지 못하였습니다.`);
+    if (raw != null) {
+        let pins = extractGiftPins(raw);
+        if (pins != null) {
+            savePins(pins);
+            alert(`핀번호 ${pins.length}개를 저장하였습니다.`);
+        } else {
+            alert(`핀을 찾지 못하였습니다.`);
+        }
     }
 }
