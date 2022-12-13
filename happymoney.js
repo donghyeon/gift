@@ -1,4 +1,24 @@
-async function enterPin(pin, row, code) {
+function loadPins() {
+    return JSON.parse(localStorage.getItem('pins'));
+}
+
+function savePins(pins) {
+    localStorage.setItem('pins', JSON.stringify(pins));
+}
+
+function removePins() {
+    localStorage.removeItem('pins');
+}
+
+function numUnregisteredPins() {
+    let savedPins = loadPins();
+    if (savedPins != null) {
+        return savedPins.length;
+    }
+    return 0;
+}
+
+async function enterHappyMoneyPin(row, pin, code) {
     let promise = new Promise((resolve, reject) => {
         setTimeout(() => {
             let keypad = document.querySelector('div[id^=mtk_originalName][style*="display: block"]');
@@ -20,55 +40,51 @@ async function enterPin(pin, row, code) {
     await promise;
 }
 
-async function enterAvailablePins() {
-    let hmJson = JSON.parse(localStorage.getItem('hmJson'));
-    let pins = hmJson['pins'];
-
-    for (let i = 2; i < 5; i++) {
-        document.querySelector('button.addSectionBtn').click();
-    }
+async function enterHappyMoneyPins(numPinsToEnter) {
+    let pins = loadPins();
 
     let rows = document.querySelectorAll('section.chargeOne');
+    for (let i = 0; i < numPinsToEnter; i++) {
+        let pinWithCode = pins[i].split('_');
+        let pin = pinWithCode[0];
+        var code = '';
+        if (pinWithCode.length == 2) {
+            code = pinWithCode[1];
+        }
 
-    for (let i = 0; i < Math.min(pins.length, 5); i++) {
-        let pin = pins[i];
-        let code = '20220701';
         let row = rows[i];
         row.querySelector('input[id^=originalName1]').onfocus();
 
-        await enterPin(pin, row, code);
-        popPin();
+        await enterHappyMoneyPin(row, pin, code);
     }
 }
 
-function canLoadLocalStorage() {
-    let hmJson = localStorage.getItem('hmJson');
-    if (hmJson === null) {
-        return false;
+function deleteEnteredPins(numEnteredPins) {
+    let pins = loadPins();
+
+    if (numEnteredPins == pins.length) {
+        removePins();
     } else {
-        return true;
+        let restPins = pins.slice(numEnteredPins);
+        savePins(restPins);
     }
+
+    return numEnteredPins;
 }
 
-function loadUnregisteredPins() {
-    let hmJson = JSON.parse(localStorage.getItem('hmJson'));
-    return hmJson['pins'];
-}
-
-function saveUnregisteredPins() {
-    let hmJson = prompt('JSON 형식으로 입력하세요.');
-    localStorage.setItem('hmJson', hmJson);
-}
-
-function popPin() {
-    let hmJson = JSON.parse(localStorage.getItem('hmJson'));
-    let pins = hmJson['pins'];
-    hmJson['pins'] = pins.slice(1);
-    localStorage.setItem('hmJson', JSON.stringify(hmJson));
-}
-
-if (canLoadLocalStorage() && loadUnregisteredPins().length > 0) {
-    enterAvailablePins();
+let num = numUnregisteredPins();
+if (num === 0) {
+    alert('저장된 핀이 없습니다. 등록할 핀을 먼저 추출해주세요.');
 } else {
-    saveUnregisteredPins();
+    let pins = loadPins();
+    let numPinsToEnter = Math.min(pins.length, 5);
+    
+    for (let i = 0; i < numPinsToEnter - 2; i++) {
+        document.querySelector('button.addSectionBtn').click();
+    }
+
+    enterHappyMoneyPins(numPinsToEnter).then(() => {
+        deleteEnteredPins(numPinsToEnter);
+        alert(`저장된 ${num}개의 핀 중 ${numPinsToEnter}개를 입력 후 저장목록에서 삭제하였습니다.`);
+    });
 }
